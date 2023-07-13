@@ -1,0 +1,44 @@
+Dev Notes:
+So when training reinforcement learning models on games. The training function is actually the function that starts the game.
+
+ModifiedState_v1 test:
+- Here i have added the following code to the state function as a way to give the model a better understanding of the distance from the food: 
+abs(game.food.x - game.head.x) + abs(game.food.y - game.head.y) < 100, 
+abs(game.food.x - game.head.x) + abs(game.food.y - game.head.y) > 200
+
+This was extremely successful, outperforming the basic state description by about 20 points. It reached 36 points scored in under 100 iterations of training. Better state description = better training.
+
+The model has also begun to do this circling technique. I believe it is doing this because there is no penalty for just moving around the board and because there is no movement penalty, it just free roams. This being said, it eventually 
+continues to fail by not running into the walls and not getting the food, so it unlearns the tactic, but you could save time by adding a movement penalty.
+
+
+ModifiedState_v2 test:
+- Here i have added the following code to the state function as a way to give the model a better understanding of the distance from the food: 
+(abs(game.food.x - game.head.x) + abs(game.food.y - game.head.y))/120, # screen WxH = 640x480 so 640+480 = 1120
+
+This code normalizes the distance from the snake to the food, thus giving it more specificity to where the food is, but not giving it so many representations that it overwhelms the model.
+You might notice that I enter 120 instead of 1120, this is because my model takes the state and inputs it into a np.array that is of dtype=int. So if i use 1120 (the correct maximum manhattan distance value) it will always output 0.
+So I believe that not normalizing between 0 and 1 actually causes the model to much of an issue.
+
+This version of state was eventually capable of getting up to around 27 points, but it took around 50 more iterations for it to get there.
+
+ModifiedState_v4 test:
+- Here i have added the following code to the state function as a way to give the model a better understanding of the distance from the food: 
+(abs(game.food.x - game.head.x) + abs(game.food.y - game.head.y))/1120, # screen WxH = 640x480 so 640+480 = 1120 WHERE STATE MODEL IS OF DTYPE=FLOAT
+
+This was terrible. I think it was too much for the size of the model.
+
+ModifiedState_v5 test:
+- Here i have kept the state and updated the model to be deeper. I am hoping this allows it to learn more complex, non-linear representations of the state data.
+
+
+ModifiedState_v6 test:
+- Here i have kept the state and updated the model to be deeper. I am hoping this allows it to learn more complex, non-linear representations of the state data.
+-- I fixed the agent to accurately understand it's own body (there was a bug in the snake colliding with itself)
+
+
+DEV NOTES:
+To get an idea of how this works. The model only calls remember and short_term_training while the snake is interacting with its env. After it has ended game, it calls long-term memory and does it all again.
+remember adds items to memory.
+short-term trains model on the item that just happend: aka the old state, the prediction, and the new state.
+long-term
